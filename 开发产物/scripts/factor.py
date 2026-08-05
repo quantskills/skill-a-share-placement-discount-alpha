@@ -36,6 +36,12 @@ import panda_data
 
 
 def _load_env_file(env_path: str = None):
+    """加载 .env 文件到环境变量。
+
+    认证优先级为 命令行参数 > 环境变量 > .env 文件，因此 .env 只能补充
+    尚未设置的键，绝不覆盖已存在的环境变量（否则会顶掉 shell export 或
+    上游已注入的凭据）。
+    """
     if env_path is None:
         env_path = Path(__file__).parent.parent / ".env"
     if env_path.exists():
@@ -44,7 +50,10 @@ def _load_env_file(env_path: str = None):
                 line = line.strip()
                 if line and not line.startswith("#") and "=" in line:
                     key, value = line.split("=", 1)
-                    os.environ[key.strip()] = value.strip()
+                    key = key.strip()
+                    # 仅在环境变量缺失时补充，保持 .env 的最低优先级
+                    if key not in os.environ:
+                        os.environ[key] = value.strip()
 
 
 def _init_panda_token(
@@ -308,7 +317,7 @@ def build_output(df: pd.DataFrame, as_of_date: str) -> pd.DataFrame:
     return output
 
 
-def calculate_factor(as_of_date: str = None):
+def calculate_factor(as_of_date: str = None, username: str = None, password: str = None):
     print("=" * 60)
     print("A股定增折价解禁因子计算（官方SDK版 v2）")
     print(f"  as_of_date: {as_of_date}")
@@ -316,7 +325,7 @@ def calculate_factor(as_of_date: str = None):
     print("=" * 60)
 
     print("[factor] 正在连接 PandaAI...")
-    _init_panda_token()
+    _init_panda_token(username, password)
     print("[factor] ✅ 已连接")
 
     if as_of_date is None:
@@ -377,7 +386,7 @@ def main():
     args = parser.parse_args()
 
     try:
-        calculate_factor(args.as_of_date)
+        calculate_factor(args.as_of_date, args.username, args.password)
     except Exception as e:
         print(f"[factor] ❌ 因子计算失败: {e}")
         import traceback

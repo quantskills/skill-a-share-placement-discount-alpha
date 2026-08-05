@@ -48,8 +48,10 @@ factor_value = -discount_rate * time_weight
 | 0 ~ 30天（已解禁） | 1.0 | Alpha最强，利空出尽反弹 |
 | 31 ~ 60天（已解禁） | 0.7 | 反弹延续 |
 | 61 ~ 120天（已解禁） | 0.4 | Alpha衰减 |
+| 121 ~ 365天（已解禁） | 0.2 | 远期，低权重 |
 | -30 ~ -1天（解禁前） | 0.3 | 承压期，低权重 |
-| -60 ~ -31天（解禁前） | 0.1 | 远期，极低权重 |
+| -90 ~ -31天（解禁前） | 0.2 | 远期，低权重 |
+| -365 ~ -91天（解禁前） | 0.1 | 远期，极低权重 |
 | 其他 / 无解禁日期 | 0.0 | 排除 |
 
 ### 排雷条件
@@ -109,9 +111,12 @@ factor_value = -discount_rate * time_weight
 
 ### signal 生成规则
 
-- `buy`：折价率≥15% 且 score≥80 且 time_weight>0
-- `hold`：time_weight>0 但不满足buy全部条件
-- `sell`：score<20
+因子方向已反转（低折价率→因子值高→买入），signal 仅基于截面 score 排名，
+不再叠加折价率阈值条件：
+
+- `buy`：score ≥ 80（因子值处于截面高分位，低折价率+有效解禁窗口）
+- `hold`：20 ≤ score < 80
+- `sell`：score < 20
 
 ### 附加输出字段
 
@@ -167,6 +172,9 @@ python scripts/validate.py
 
 # 回测因子
 python scripts/backtest.py --period 20
+
+# 运行单元测试（无需联网，校验时间权重档位/认证优先级/因子逻辑）
+python scripts/test.py
 ```
 
 ## 验收要求
