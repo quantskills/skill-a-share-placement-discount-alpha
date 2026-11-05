@@ -68,3 +68,10 @@ python scripts/backtest.py --start-date 20250101 --end-date 20260701 --period 20
 3. time_weight > 0 · Effective window only
 4. 排除 ST/*ST · Exclude ST stocks
 5. 排除交易状态异常 · Exclude abnormal trading status
+
+## Pandadata compatibility
+
+[Pandadata 1.0.6 compatibility](references/pandadata-compatibility.md) — exact SDK baseline, validation scope, and shared guidance for all supported agent runtimes.
+
+
+Pandadata 兼容维护：[abgyjaguo](https://github.com/abgyjaguo)，保留原项目作者署名。
